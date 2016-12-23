@@ -1,0 +1,34 @@
+{
+  "name": "dumpme",
+  "main": "index.js",
+  "version": "1.0.0",
+  "author": "The Kuzzle Team <support@kuzzle.io>",
+  "description": "Creates a coredump of the current process, without killing it",
+  "keywords": [
+    "core",
+    "coredump",
+    "ptrace",
+    "gcore",
+    "process dump"
+  ],
+  "scripts": {
+    "configure": "node-gyp configure",
+    "build": "node-gyp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kuzzleio/dumpme.git"
+  },
+  "dependencies": {
+    "bindings": "^1.2.1",
+    "nan": "^2.5.0"
+  },
+  "devDependencies": {
+    "node-gyp": "^3.4.0"
+  },
+  "engines": {
+    "node": ">= 4.4.5",
+    "npm": ">= 2.14.4"
+  },
+  "license": "MIT"
+}
