@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+- '4'
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.9
+    - g++-4.9
+before_install:
+- export CC="gcc-4.9" CXX="g++-4.9"
+deploy:
+  provider: npm
+  email: support@kuzzle.io
+  api_key:
+    secure: J5Ma2nJ8NRf6fbR7i9XdwcbEI04V3ouOhrjmewfmstRcuJUvxcvUly1cgoNpJqel0UzR4k8wjqPCfOUXHBdYzymWtpxre96OQGfBEz+Q62wPn0tB/kq+RFH8dBspOfCPb3Vt5wsMEKkh1Bz1+HVOYBJ878qsavugx5Fn3BGyRBU+OGvD9zT4fIqFfujOl3Mc17Qa86MsmYYt3dYJKtKbe/1u4BsRhlCvfclpGqryQU2TEqLGN6x8J6iJfM+TjkaEGVZQKk9ONq3K1GVsuVwJM6PBgFkbt3zLydvzV0LsS0/zS0ReQhHjhcE5Ulii8QoJxbLIdVwHgrgRHHvwcH8RxDWRwcdJur3dW2qZscaEmJkxhkXd7sPIxLtU97t/hZlTDa3QB3wSbJ18hm9pFW1X31a1//Hc+X3Z2YHli3oiBA3CO+OtLp2BBDg0MGnHl/raHOOqEsMcuCT5gj56Z3pWJOBvPRxmRKQrVEAforQh+KV+OyTCcMT+oDghil4aO1xnoCZqTYmNyvnGrRkq4KmtPwDMtABImYj4ePl9KLTMpQOFisW1swmgd8HOWPeR0qBTPtMilBcExg+wVRDdyL3oWvl8rhP1lkqJM1Sr+rSOUA7rzgb/g6EqS9YNopUOaBUWLwvYtoMfSyiQCFyhd46sEnOkNfgDQXRhuv2yCJSXbOM=
+  on:
+    repo: kuzzleio/dumpme
+    branch: master
