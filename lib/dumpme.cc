@@ -21,17 +21,17 @@ NAN_METHOD(dumpProcess) {
     return;
   }
 
-/*
- On linux kernels with hardening features, we need to authorize
- gcore to attach itself to the current PID
- */
-#ifdef TARGET_LINUX
-  if (prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0) != 0) {
-    perror("Unable to get pattach permission from the kernel");
-    info.GetReturnValue().Set(false);
-    return;
-  }
-#endif
+  /*
+   On linux kernels with hardening features, we need to authorize
+   gcore to attach itself to the current PID
+   */
+  #ifdef PR_SET_PTRACER
+    if (prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0) != 0) {
+      perror("Unable to get pattach permission from the kernel");
+      info.GetReturnValue().Set(false);
+      return;
+    }
+  #endif
 
   FILE *fp = popen(command, "r");
 
@@ -47,13 +47,13 @@ NAN_METHOD(dumpProcess) {
 
   pclose(fp);
 
-#ifdef TARGET_LINUX
-  if (prctl(PR_SET_PTRACER, 0, 0, 0, 0) != 0) {
-    perror("Unable to revoke pattach permission");
-    info.GetReturnValue().Set(false);
-    return;
-  }
-#endif
+  #ifdef PR_SET_PTRACER
+    if (prctl(PR_SET_PTRACER, 0, 0, 0, 0) != 0) {
+      perror("Unable to revoke pattach permission");
+      info.GetReturnValue().Set(false);
+      return;
+    }
+  #endif
 
   info.GetReturnValue().Set(true);
 }

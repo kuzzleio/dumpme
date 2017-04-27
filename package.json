@@ -1,7 +1,7 @@
 {
   "name": "dumpme",
   "main": "index.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "The Kuzzle Team <support@kuzzle.io>",
   "description": "Creates a coredump of the current process, without killing it",
   "keywords": [
