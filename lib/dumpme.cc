@@ -10,8 +10,16 @@
 #include "dumpme.h"
 
 NAN_METHOD(dumpProcess) {
+  v8::Isolate *isolate = info.GetIsolate();
+
+#if NODE_MODULE_VERSION < NODE_12_0_MODULE_VERSION
   v8::String::Utf8Value gcore(info[0]);
   v8::String::Utf8Value target(info[1]);
+#else
+  v8::String::Utf8Value gcore(isolate, info[0]);
+  v8::String::Utf8Value target(isolate, info[1]);
+#endif
+
   char command[4096];
   char buffer[255];
 
