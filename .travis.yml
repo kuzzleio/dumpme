@@ -1,6 +1,9 @@
 language: node_js
 node_js:
-- '4'
+- '6'
+- '8'
+- '10'
+- '12'
 addons:
   apt:
     sources:
@@ -14,7 +17,7 @@ deploy:
   provider: npm
   email: support@kuzzle.io
   api_key:
-    secure: LSufSRMVGPxMUb0A+g2QXb7XOTaNbBcR7vP9grgOsxGCES2n4EvqxnQNSvJVw7f3EI6JqcD6tybM0dTqXiDPxSaiX6OAXgrzC30k3tF6rIOvBkPIJWTTBl88xrOxfcCRVOdmje3rWipMOL9Y1mloyGISDPpZ/yyE2OCtZq+r1tHSLovBv0AasZhUg4dp8NjAskjDTdbRQcEFsHHMosFR6qdoFsm8FfriZ65L3j/YlZpXCqNXIWduItIc8d8Rq2lHk92Ki07TqsWxmKa12eQ95kSrmDuB8QyIPocMohLSh3yVlGQ+By0TV2iGBPMDUjjDdQp8xpVuId4MNS/2YwKmnm/XTTtSklPkfmr1t99iwBmh1ElBBpm/1FNb6j20ZlXYPzkIcEkvg2eReR4U2OZgTiwKIfTYHWo93n88Bkq5eZKqRK9LKZRcE2WycTQrfJ0IZDe/afw3iyY9z4zPQz6/W7AdPsjFuyGiYxIwTHAO7vsAMms25zG7q+Pb8zqoQt0uf1TEQWIGyLuarONltwySBjNO68CQxQZfIZLgvhjA/2CFddQ4+BSgQ+GOjFwk32XZs7+ykkOpwcs0sY42pP6BcKEih8kPYAry5U/XKUC1O6XFxcSmPAW3nZdUIG4iTxwoImIQQWLfVgbLbdVeX/Ln61ReVuLaDT4oTnrM4QSGt6U=
+    secure: DS1I9oN2Pjkh9gssepyiLB3JiA6Zunym+44h91ar25tKtH+aL2ZDhOYcmCNc/NAO2nrUsaHcE+0TfNLuGe+HgxurGqTNG7lEvW0FLqQ79KVAnCYKBFP+QfW6Pbq2NVCRc9OOCOznkIlXcYfwdMT6gSXFSoSJNh3lsDEZGr5TzpLkGFDSBgZySAnDp9Ixk8rhgvT6BRGCa4kB4x/EyqLslfCQSrpze336ZwlwR9NG0oxaqKAL0KAgvMq51hk9Kb3+OwrXnA7mSEgDdQtKZHLODQY7jISgE2l7bDKbFfifTsHgWLl4ouijrd0UBRz3o/GiLPVwM3MtMbxRpvm4IHZMvFq7AAROwxy9No4vQ5zLamsvxum2+VCw/SZekxE6J2Bk9/NdL1P5ZBFndlhoJdQJAounhUdLnHipbjl4G5SBN3at5R0QFzP+StOG6mLzdSia2EYoPBsXsQde0bQn0v5SUhdXz40LORUMP/ZzBTx26Uv2ZfNMMb2pUqtAZPISld1uGBN+AdYqxTsS0LttE7GgaFM+gilqTHiE4cZb4mwuA3X3KLk1RGFALPB79asSCCgfpQ8D3p/4q6P1oDnFubyO1gYebOVcW4VdR8dgBpiWmJS5CBA1UG7zyGrbpBC1pZ3u29Xm+VwbG/MCWK8Rs+T++hwaqYax8uFryBwy7bPXBL0=
   on:
     repo: kuzzleio/dumpme
     branch: master
