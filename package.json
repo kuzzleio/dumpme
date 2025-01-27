@@ -1,7 +1,7 @@
 {
   "name": "dumpme",
   "main": "index.js",
-  "version": "1.0.3",
+  "version": "1.0.0-dev.1",
   "author": "The Kuzzle Team <support@kuzzle.io>",
   "description": "Creates a coredump of the current process, without killing it",
   "keywords": [
@@ -12,23 +12,34 @@
     "process dump"
   ],
   "scripts": {
+    "clean": "node-gyp clean",
     "configure": "node-gyp configure",
-    "build": "node-gyp build"
+    "build": "node-gyp build",
+    "rebuild": "node-gyp rebuild"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/kuzzleio/dumpme.git"
+    "url": "git+https://github.com/kuzzleio/dumpme.git"
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "nan": "^2.14.0"
+    "nan": "^2.22.0"
   },
   "devDependencies": {
-    "node-gyp": "^6.0.0"
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "node-gyp": "^11.0.0",
+    "semantic-release-config-kuzzle": "^1.1.2"
   },
   "engines": {
-    "node": ">= 4.4.5",
-    "npm": ">= 2.14.4"
+    "node": "^18.17.0 || >=20.5.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "files": [
+    "CHANGELOG.md",
+    "binding.gyp",
+    "lib/dumpme.cc",
+    "lib/dumpme.h"
+  ]
 }
