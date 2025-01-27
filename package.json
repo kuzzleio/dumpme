@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/kuzzleio/dumpme.git"
+    "url": "git+https://github.com/kuzzleio/dumpme.git"
   },
   "dependencies": {
     "bindings": "^1.5.0",
