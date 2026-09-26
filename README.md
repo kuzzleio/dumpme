@@ -10,6 +10,14 @@ Supports Linux Kernel Hardening options.
 * [gdb/gcore](http://man7.org/linux/man-pages/man1/gcore.1.html) must be installed on the system
 * obviously, works only on *nix systems
 
+## Installation
+
+The package ships prebuilt N-API binaries for `linux-x64`, `linux-arm64`
+(glibc 2.31+), `darwin-x64` and `darwin-arm64`, valid for every supported Node
+major: on those platforms `npm install` compiles nothing and needs no compiler.
+Elsewhere (Alpine/musl, other architectures) it falls back to building from
+source with `node-gyp`, which requires Python and a C++ toolchain.
+
 ## How to use
 
 #### `dumpme([gcore], [coredump])`

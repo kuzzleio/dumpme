@@ -1,6 +1,4 @@
-#include <v8.h>
-#include <node.h>
-#include <nan.h>
+#include <napi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -9,24 +7,18 @@
 #include <string>
 #include "dumpme.h"
 
-NAN_METHOD(dumpProcess) {
-  v8::Isolate *isolate = info.GetIsolate();
+Napi::Value dumpProcess(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
 
-#if NODE_MODULE_VERSION < NODE_12_0_MODULE_VERSION
-  v8::String::Utf8Value gcore(info[0]);
-  v8::String::Utf8Value target(info[1]);
-#else
-  v8::String::Utf8Value gcore(isolate, info[0]);
-  v8::String::Utf8Value target(isolate, info[1]);
-#endif
+  std::string gcore = info[0].ToString().Utf8Value();
+  std::string target = info[1].ToString().Utf8Value();
 
   char command[4096];
   char buffer[255];
 
-  if ((unsigned)snprintf(command, sizeof command, "%s -o %s %ld 2>&1", *gcore, *target, (long)getpid()) > sizeof command) {
+  if ((unsigned)snprintf(command, sizeof command, "%s -o %s %ld 2>&1", gcore.c_str(), target.c_str(), (long)getpid()) > sizeof command) {
     fprintf(stderr, "[dumpme] Specified command length exceeds system limit (%ld bytes)\n", sizeof command);
-    info.GetReturnValue().Set(false);
-    return;
+    return Napi::Boolean::New(env, false);
   }
 
   /*
@@ -36,8 +28,7 @@ NAN_METHOD(dumpProcess) {
   #ifdef PR_SET_PTRACER
     if (prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0) != 0) {
       perror("Unable to get pattach permission from the kernel");
-      info.GetReturnValue().Set(false);
-      return;
+      return Napi::Boolean::New(env, false);
     }
   #endif
 
@@ -45,8 +36,7 @@ NAN_METHOD(dumpProcess) {
 
   if (fp == NULL) {
     perror("[dumpme]");
-    info.GetReturnValue().Set(false);
-    return;
+    return Napi::Boolean::New(env, false);
   }
 
   while (fgets(buffer, 254, fp) != NULL) {
@@ -58,16 +48,16 @@ NAN_METHOD(dumpProcess) {
   #ifdef PR_SET_PTRACER
     if (prctl(PR_SET_PTRACER, 0, 0, 0, 0) != 0) {
       perror("Unable to revoke pattach permission");
-      info.GetReturnValue().Set(false);
-      return;
+      return Napi::Boolean::New(env, false);
     }
   #endif
 
-  info.GetReturnValue().Set(true);
+  return Napi::Boolean::New(env, true);
 }
 
-NAN_MODULE_INIT(init) {
-  Nan::Set(target, Nan::New("dumpProcess").ToLocalChecked(), Nan::GetFunction(Nan::New<v8::FunctionTemplate>(dumpProcess)).ToLocalChecked());
+Napi::Object init(Napi::Env env, Napi::Object exports) {
+  exports.Set("dumpProcess", Napi::Function::New(env, dumpProcess));
+  return exports;
 }
 
-NODE_MODULE(dumpme, init)
+NODE_API_MODULE(dumpme, init)
