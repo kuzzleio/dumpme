@@ -11,7 +11,11 @@
                 }]
             ],
             'include_dirs' : [
-                '<!(node -e \'require("nan")\')'
+                '<!(node -p "require(\'node-addon-api\').include_dir")'
+            ],
+            'defines': [
+                'NAPI_VERSION=8',
+                'NAPI_DISABLE_CPP_EXCEPTIONS'
             ]
         }
     ]
