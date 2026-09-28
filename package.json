@@ -1,7 +1,7 @@
 {
   "name": "dumpme",
   "main": "index.js",
-  "version": "2.0.0",
+  "version": "2.1.0-dev.1",
   "author": "The Kuzzle Team <support@kuzzle.io>",
   "description": "Creates a coredump of the current process, without killing it",
   "keywords": [
@@ -12,25 +12,31 @@
     "process dump"
   ],
   "scripts": {
+    "install": "node-gyp-build",
     "clean": "node-gyp clean",
     "configure": "node-gyp configure",
     "build": "node-gyp build",
-    "rebuild": "node-gyp rebuild"
+    "rebuild": "node-gyp rebuild",
+    "prebuildify": "prebuildify --napi --strip --tag-libc",
+    "test": "node test/smoke.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kuzzleio/dumpme.git"
   },
   "dependencies": {
-    "bindings": "^1.5.0",
-    "nan": "^2.22.0"
+    "node-addon-api": "^8.5.0",
+    "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@semantic-release/npm": "^13.1.5",
     "cz-conventional-changelog": "^3.3.0",
     "node-gyp": "^11.0.0",
-    "semantic-release-config-kuzzle": "^1.1.2"
+    "prebuildify": "^6.0.1",
+    "semantic-release": "^25.0.3",
+    "semantic-release-config-kuzzle": "^1.3.0"
   },
   "engines": {
     "node": "^18.17.0 || >=20.5.0"
@@ -39,7 +45,9 @@
   "files": [
     "CHANGELOG.md",
     "binding.gyp",
+    "index.js",
     "lib/dumpme.cc",
-    "lib/dumpme.h"
+    "lib/dumpme.h",
+    "prebuilds/"
   ]
 }

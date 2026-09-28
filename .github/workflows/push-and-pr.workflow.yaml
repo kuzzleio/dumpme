@@ -8,36 +8,144 @@ on:
   pull_request:
 
 jobs:
-  test-build:
-    name: Test build
-    runs-on: ubuntu-24.04
+  # One N-API binary per (os, arch) serves every Node major, so nothing here
+  # depends on the Node version. Linux binaries are built in a bullseye
+  # container: glibc 2.31 is older than every Debian image Kuzzle projects
+  # build on (bookworm, trixie), and a binary only loads on a glibc at least
+  # as recent as the one it was linked against.
+  prebuild:
+    name: Prebuild ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: ["18", "20", "22"]
+        include:
+          - { name: linux-x64, os: ubuntu-24.04, container: true }
+          - { name: linux-arm64, os: ubuntu-24.04-arm, container: true }
+          - { name: darwin-x64, os: macos-15-intel }
+          - { name: darwin-arm64, os: macos-15 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prebuild in a bullseye container
+        if: ${{ matrix.container }}
+        run: |
+          docker run --rm -v "$PWD":/src -w /src node:20-bullseye \
+            bash -c "npm ci --ignore-scripts && npm run prebuildify"
+
+      - uses: actions/setup-node@v4
+        if: ${{ !matrix.container }}
+        with:
+          cache: "npm"
+          node-version: "20"
+
+      - name: Prebuild
+        if: ${{ !matrix.container }}
+        run: npm ci --ignore-scripts && npm run prebuildify
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prebuilds-${{ matrix.name }}
+          path: prebuilds/
+          if-no-files-found: error
+
+  # Installs the packed tarball the way a consumer does and fails if anything
+  # was compiled: the whole point of the prebuilds is that `npm install` runs
+  # no node-gyp on a supported platform.
+  test-install:
+    name: Install from tarball (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    needs: [prebuild]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15]
+        node-version: ["18", "20", "22", "24"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          cache: "npm"
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prebuilds-*
+          path: prebuilds
+          merge-multiple: true
 
-      - name: Run build
-        run: npm run rebuild
+      - name: Pack
+        run: npm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Install without compiling
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir consumer && cd consumer
+          npm init -y > /dev/null
+          npm install --foreground-scripts --no-audit --no-fund ../dumpme-*.tgz 2>&1 | tee install.log
+          if grep -qE 'gyp info spawn|CXX\(target\)' install.log; then
+            echo "::error::npm install compiled dumpme instead of using a prebuild"
+            exit 1
+          fi
+          test ! -d node_modules/dumpme/build
+
+      - name: Smoke test
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          cp "$GITHUB_WORKSPACE/test/smoke.js" .
+          sed -i.bak "s#require('..')#require('dumpme')#" smoke.js
+          node smoke.js
+
+      # GitHub's Ubuntu runners have Yama enabled, so this is where the real
+      # path runs end to end: PR_SET_PTRACER, gcore attaching, a core file.
+      - name: Real coredump
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          sudo apt-get update && sudo apt-get install -y gdb
+          node -e "process.exit(require('dumpme')('gcore', '/tmp/core.test') ? 0 : 1)"
+          # gcore appends the PID to the -o prefix
+          ls -la /tmp/core.test.*
+          test -s "$(ls /tmp/core.test.* | head -1)"
+
+  # A platform without a prebuild must still work, by compiling locally.
+  test-fallback:
+    name: Compile fallback (alpine, no matching prebuild)
+    needs: [prebuild]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prebuilds-*
+          path: prebuilds
+          merge-multiple: true
+
+      - name: Install and run on musl
+        run: |
+          npm pack
+          docker run --rm -v "$PWD":/src -w /tmp node:22-alpine sh -c "
+            apk add -q python3 make g++ &&
+            npm init -y > /dev/null &&
+            npm install --no-audit --no-fund /src/dumpme-*.tgz &&
+            test -f node_modules/dumpme/build/Release/dumpme.node &&
+            cp /src/test/smoke.js . &&
+            sed -i \"s#require('..')#require('dumpme')#\" smoke.js &&
+            node smoke.js"
 
   release:
     name: Release process
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/1-dev') }}
-    needs: [test-build]
+    needs: [test-install, test-fallback]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
       issues: write
       pull-requests: write
       packages: write
+      # npm trusted publishing (OIDC): no npm token, npmjs.com trusts this
+      # workflow file of this repository.
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,15 +158,19 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
-      - name: Build
-        run: npm run build
+      # Published inside the tarball (see `files`), which is what spares
+      # consumers the compilation.
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: prebuilds-*
+          path: prebuilds
+          merge-multiple: true
 
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           SEMANTIC_RELEASE_NPM_PUBLISH: "true"
           SEMANTIC_RELEASE_SLACK_WEBHOOK: ${{ secrets.SEMANTIC_RELEASE_SLACK_WEBHOOK }}
         run: npx semantic-release

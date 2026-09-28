@@ -1,6 +1,6 @@
 'use strict';
 
-const DumpProcess = require('bindings')('dumpme');
+const DumpProcess = require('node-gyp-build')(__dirname);
 
 /**
  * Dumps the current process
